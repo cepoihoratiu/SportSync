@@ -1,7 +1,7 @@
 ## Progress
 
 ### Screenshot
-![Login Page](ImgProgres/Login.png)
+![Login Page](Login.png)
 
 ### Video
-[Watch Login Process](ImgProgres/Login.mp4)
+[Watch Login Process](Login.mp4)
