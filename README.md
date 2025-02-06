@@ -1,7 +1,22 @@
+## Project Overview
+
+### Technical Details
+- Developed using **Android Studio**
+- Code written in **Java**
+
+### Database
+- Utilizes **Firebase** for data storage and management
+
+## Description
+- Mobile application for Sport Exercise detection - TeachableMachine Model
+
 ## Progress
 
-### Screenshot
-![Login Page](Login.png)
+### Created Logo and Name
+- SportSync
 
-### Video
-[Watch Login Process](Login.mp4)
+### Landing Page
+- Logo
+- Username + Password
+- Login and Register sections
+- Features: possible to create users and login, different usernames
