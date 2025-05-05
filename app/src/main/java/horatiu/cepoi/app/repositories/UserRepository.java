@@ -56,7 +56,8 @@ public class UserRepository {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
-                        callback.onSuccess("Login successful!");
+                        String userId = queryDocumentSnapshots.getDocuments().get(0).getId(); // ✅ Real Firestore user ID
+                        callback.onSuccess(userId); // Pass the actual ID
                     } else {
                         callback.onFailure(new Exception("Invalid username or password"));
                     }

@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import horatiu.cepoi.app.R;
+import horatiu.cepoi.app.mainScreen.HomepageFragment;
+import horatiu.cepoi.app.mainScreen.MainFragment;
 import horatiu.cepoi.app.repositories.UserRepository;
 
 public class LoginFragment extends Fragment {
@@ -51,8 +53,16 @@ public class LoginFragment extends Fragment {
         userRepository.loginUser(username, password, new UserRepository.UserCallback() {
             @Override
             public void onSuccess(Object result) {
-                Toast.makeText(getActivity(), result.toString(), Toast.LENGTH_SHORT).show();
-                // Navigate to next screen or update UI
+                String userId = (String) result;
+
+                Toast.makeText(getActivity(), "Login successful", Toast.LENGTH_SHORT).show();
+
+                HomepageFragment homepageFragment = HomepageFragment.newInstance(userId);
+
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, new MainFragment(homepageFragment, userId))
+                        .commit();
             }
 
             @Override
@@ -74,7 +84,16 @@ public class LoginFragment extends Fragment {
         userRepository.registerUser(username, password, new UserRepository.UserCallback() {
             @Override
             public void onSuccess(Object result) {
-                Toast.makeText(getActivity(), result.toString(), Toast.LENGTH_SHORT).show();
+                String userId = (String) result;
+
+                Toast.makeText(getActivity(), "Registration successful", Toast.LENGTH_SHORT).show();
+
+                HomepageFragment homepageFragment = HomepageFragment.newInstance(userId);
+
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, new MainFragment(homepageFragment, userId))
+                        .commit();
             }
 
             @Override
