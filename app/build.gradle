@@ -46,4 +46,10 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore:24.7.1'
     implementation 'com.google.firebase:firebase-auth:22.2.0'
 
+    implementation 'org.tensorflow:tensorflow-lite-task-vision:0.4.2'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.4.2'
+    implementation 'androidx.camera:camera-camera2:1.1.0'
+    implementation 'androidx.camera:camera-lifecycle:1.1.0'
+    implementation 'androidx.camera:camera-view:1.1.0'
+
 }
