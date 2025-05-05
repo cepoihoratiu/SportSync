@@ -18,59 +18,82 @@ public class UserRepository {
     public UserRepository() {
         this.auth = FirebaseAuth.getInstance();
         this.db = FirebaseFirestore.getInstance();
-        this.usersCollection = db.collection("users"); // Firestore "users" collection
+        this.usersCollection = db.collection("users");
     }
 
-    // Register a new user (Check if username already exists)
-    public void registerUser(String username, String password, final UserCallback callback) {
-        usersCollection.whereEqualTo("username", username)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                        callback.onFailure(new Exception("Username already taken"));
-                    } else {
-                        saveUserToFirestore(username, password, callback);
-                    }
-                });
+    public void registerUserWithEmail(String email, String password, final UserCallback callback) {
+
+        usersCollection.whereEqualTo("email", email).get().addOnCompleteListener(emailTask -> {
+            if (emailTask.isSuccessful() && !emailTask.getResult().isEmpty()) {
+                callback.onFailure(new Exception("Email already in use"));
+            } else {
+                auth.createUserWithEmailAndPassword(email, password)
+                        .addOnSuccessListener(authResult -> {
+                            saveUserToFirestore(email, password, callback);
+                        })
+                        .addOnFailureListener(callback::onFailure);
+            }
+        });
     }
 
-    // Save user to Firestore with an auto-generated document ID
-    private void saveUserToFirestore(String username, String password, final UserCallback callback) {
-        String hashedPassword = hashPassword(password); // Securely hash the password
+    private void saveUserToFirestore(String email, String password, final UserCallback callback) {
+        String hashedPassword = hashPassword(password);
 
         Map<String, Object> user = new HashMap<>();
-        user.put("username", username);
-        user.put("password", hashedPassword); // Store hashed password
+        user.put("email", email);
+        user.put("password", hashedPassword);
+        user.put("name", null);
+        user.put("surname", null);
+        user.put("phoneNumber", null);
 
-        usersCollection.add(user) // Firestore will generate a unique document ID
-                .addOnSuccessListener(documentReference -> callback.onSuccess("User registered with ID: " + documentReference.getId()))
+        usersCollection.add(user)
+                .addOnSuccessListener(docRef -> callback.onSuccess(docRef.getId()))
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // Login User by checking username and hashed password in Firestore
-    public void loginUser(String username, String password, final UserCallback callback) {
-        String hashedPassword = hashPassword(password);
+    public void loginUser(String email, String password, final UserCallback callback) {
+        auth.signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    String userEmail = auth.getCurrentUser().getEmail();
 
-        usersCollection.whereEqualTo("username", username)
-                .whereEqualTo("password", hashedPassword) // Matching hashed password
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        String userId = queryDocumentSnapshots.getDocuments().get(0).getId(); // ✅ Real Firestore user ID
-                        callback.onSuccess(userId); // Pass the actual ID
+                    usersCollection.whereEqualTo("email", userEmail)
+                            .get()
+                            .addOnSuccessListener(query -> {
+                                if (!query.isEmpty()) {
+                                    String userId = query.getDocuments().get(0).getId();
+                                    callback.onSuccess(userId);
+                                } else {
+                                    callback.onFailure(new Exception("User not found in Firestore"));
+                                }
+                            })
+                            .addOnFailureListener(callback::onFailure);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void logoutUser() {
+        auth.signOut();
+    }
+
+    public void getUserById(String userId, UserCallback callback) {
+        usersCollection.document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        callback.onSuccess(documentSnapshot.getData());
                     } else {
-                        callback.onFailure(new Exception("Invalid username or password"));
+                        callback.onFailure(new Exception("User not found"));
                     }
                 })
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // Logout User
-    public void logoutUser() {
-        auth.signOut();
+    public void updateUser(String userId, Map<String, Object> updates, UserCallback callback) {
+        usersCollection.document(userId)
+                .update(updates)
+                .addOnSuccessListener(aVoid -> callback.onSuccess("User updated"))
+                .addOnFailureListener(callback::onFailure);
     }
 
-    // Password Hashing (SHA-256)
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -82,11 +105,10 @@ public class UserRepository {
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
             Log.e(TAG, "Hashing error: " + e.getMessage());
-            return password; // Fallback (Not recommended)
+            return password;
         }
     }
 
-    // Callback interface
     public interface UserCallback {
         void onSuccess(Object result);
         void onFailure(Exception e);
