@@ -19,51 +19,60 @@ import java.util.List;
 
 import horatiu.cepoi.app.R;
 import horatiu.cepoi.app.data.models.Article;
+import horatiu.cepoi.app.repositories.ArticleRepository;
 
 public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ArticleViewHolder> {
-
     private final List<Article> articleList;
-    private final String userId;
-    private final OnApproveToggleClickListener approveToggleClickListener;
+    private final String currentUserId;
+    private final ArticleRepository articleRepository = new ArticleRepository();
+    private final ArticleAdapter.OnApproveClickListener approveClickListener;
+    private final ArticleAdapter.OnDeleteClickListener deleteClickListener;
 
-    public interface OnApproveToggleClickListener {
-        void onApproveToggle(Article article);
-    }
-
-    public ArticleAdapter(List<Article> articles, String userId, OnApproveToggleClickListener listener) {
+    public ArticleAdapter(List<Article> articles, String currentUserId,
+                          OnApproveClickListener approveClickListener,
+                          OnDeleteClickListener deleteClickListener) {
         this.articleList = articles;
-        this.userId = userId;
-        this.approveToggleClickListener = listener;
+        this.currentUserId = currentUserId;
+        this.approveClickListener = approveClickListener;
+        this.deleteClickListener = deleteClickListener;
     }
 
     @NonNull
     @Override
     public ArticleViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_article, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_article, parent, false);
         return new ArticleViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ArticleViewHolder holder, int position) {
         Article article = articleList.get(position);
+
         holder.title.setText(article.title);
         holder.content.setText(article.content);
         holder.author.setText("By: " + article.authorName);
         Glide.with(holder.itemView.getContext()).load(article.imageUrl).into(holder.image);
 
+        // Open link
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(article.content));
             v.getContext().startActivity(intent);
         });
 
-        if ("tE6ixjCwOybj2IBD9XfE".equals(userId)) {
-            holder.approveButton.setVisibility(View.VISIBLE);
-            holder.approveButton.setText(article.approved ? "Approved ✅" : "Unapproved ❌");
-            holder.approveButton.setBackgroundColor(article.approved ? Color.GREEN : Color.RED);
-            holder.approveButton.setOnClickListener(v -> approveToggleClickListener.onApproveToggle(article));
+        // Admin only buttons
+        if (currentUserId.equals("tE6ixjCwOybj2IBD9XfE")) {
+            holder.approveBtn.setVisibility(View.VISIBLE);
+            holder.deleteBtn.setVisibility(View.VISIBLE);
+
+            holder.approveBtn.setText(article.approved ? "✅ Approved" : "❌ Approve");
+            holder.approveBtn.setBackgroundColor(article.approved ? Color.GREEN : Color.RED);
+            holder.approveBtn.setOnClickListener(v -> approveClickListener.onApproveClick(position));
+
+            holder.deleteBtn.setText("Delete");
+            holder.deleteBtn.setOnClickListener(v -> deleteClickListener.onDeleteClick(position));
         } else {
-            holder.approveButton.setVisibility(View.GONE);
+            holder.approveBtn.setVisibility(View.GONE);
+            holder.deleteBtn.setVisibility(View.GONE);
         }
     }
 
@@ -72,10 +81,10 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ArticleV
         return articleList.size();
     }
 
-    static class ArticleViewHolder extends RecyclerView.ViewHolder {
+    public static class ArticleViewHolder extends RecyclerView.ViewHolder {
         TextView title, content, author;
         ImageView image;
-        Button approveButton;
+        Button approveBtn, deleteBtn;
 
         public ArticleViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -83,7 +92,16 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ArticleV
             content = itemView.findViewById(R.id.articleContent);
             author = itemView.findViewById(R.id.articleAuthor);
             image = itemView.findViewById(R.id.articleImage);
-            approveButton = itemView.findViewById(R.id.approveButton);
+            approveBtn = itemView.findViewById(R.id.approveButton);
+            deleteBtn = itemView.findViewById(R.id.deleteButton);
         }
+    }
+
+    public interface OnApproveClickListener {
+        void onApproveClick(int position);
+    }
+
+    public interface OnDeleteClickListener {
+        void onDeleteClick(int position);
     }
 }

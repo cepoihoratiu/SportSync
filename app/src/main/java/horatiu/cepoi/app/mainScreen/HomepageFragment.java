@@ -73,21 +73,38 @@ public class HomepageFragment extends Fragment {
         postArticleButton.setOnClickListener(v -> postArticle());
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new ArticleAdapter(articleList, userId, article -> {
-            boolean newStatus = !article.approved;
-            articleRepository.updateArticleApproval(article.id, newStatus, new ArticleRepository.ArticleCallback() {
-                @Override
-                public void onSuccess(Object result) {
-                    Toast.makeText(getContext(), "Approval updated", Toast.LENGTH_SHORT).show();
-                    loadArticles();
-                }
+        adapter = new ArticleAdapter(articleList, userId,
+                position -> {
+                    Article article = articleList.get(position);
+                    articleRepository.updateArticleApproval(article.id, !article.approved, new ArticleRepository.ArticleCallback() {
+                        @Override
+                        public void onSuccess(Object result) {
+                            article.approved = !article.approved;
+                            adapter.notifyItemChanged(position);
+                        }
 
-                @Override
-                public void onFailure(Exception e) {
-                    Toast.makeText(getContext(), "Failed to update approval: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-        });
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(getContext(), "Error updating approval", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                },
+                position -> {
+                    Article article = articleList.get(position);
+                    articleRepository.deleteArticle(article.id, new ArticleRepository.ArticleCallback() {
+                        @Override
+                        public void onSuccess(Object result) {
+                            articleList.remove(position);
+                            adapter.notifyItemRemoved(position);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(getContext(), "Error deleting article", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+
         recyclerView.setAdapter(adapter);
 
         loadArticles();
