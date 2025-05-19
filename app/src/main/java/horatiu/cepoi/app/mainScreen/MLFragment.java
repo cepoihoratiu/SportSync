@@ -13,8 +13,11 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,6 +43,9 @@ public class MLFragment extends Fragment {
 
     private TextureView textureView;
     private TextView statusTextView;
+    private Spinner exerciseSpinner;
+    private String selectedExercise = "Pushup";
+
     private CameraDevice cameraDevice;
     private CameraCaptureSession cameraCaptureSession;
     private CaptureRequest.Builder previewRequestBuilder;
@@ -60,8 +66,24 @@ public class MLFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_ml, container, false);
+
         textureView = view.findViewById(R.id.camera_preview);
         statusTextView = view.findViewById(R.id.statusTextView);
+        exerciseSpinner = view.findViewById(R.id.exercise_spinner);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, labels);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        exerciseSpinner.setAdapter(adapter);
+        exerciseSpinner.setSelection(0);
+        exerciseSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedExercise = labels[position];
+                statusTextView.setText("Analyzing: " + selectedExercise);
+            }
+
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -118,39 +140,52 @@ public class MLFragment extends Fragment {
 
         try {
             List<Classifications> results = classifier.classify(tensorImage);
-
             if (results.isEmpty()) return;
 
-            Category topCategory = results.get(0).getCategories().get(0);
-            int labelIndex;
+            int selectedIndex = -1;
+            for (int i = 0; i < labels.length; i++) {
+                if (labels[i].equals(selectedExercise)) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+            if (selectedIndex == -1) return;
 
-            try {
-                labelIndex = Integer.parseInt(topCategory.getLabel());
-            } catch (NumberFormatException e) {
-                labelIndex = 0; // fallback
+            Category matchedCategory = null;
+            for (Category category : results.get(0).getCategories()) {
+                int labelIndex;
+                try {
+                    labelIndex = Integer.parseInt(category.getLabel());
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+
+                if (labelIndex == selectedIndex) {
+                    matchedCategory = category;
+                    break;
+                }
             }
 
-            String labelName = labelIndex < labels.length ? labels[labelIndex] : "Unknown";
+            if (matchedCategory == null) return;
 
-            // Round to nearest 10 (e.g., 68 -> 70)
-            int percentage = Math.round(topCategory.getScore() * 100);
+            int percentage = Math.round(matchedCategory.getScore() * 100);
             int bucket = Math.round(percentage / 10.0f) * 10;
 
-            if (labelName.equals(lastShownLabel) && bucket == lastShownBucket) return;
+            if (selectedExercise.equals(lastShownLabel) && bucket == lastShownBucket) return;
 
-            lastShownLabel = labelName;
+            lastShownLabel = selectedExercise;
             lastShownBucket = bucket;
 
             String correctness;
             if (bucket >= 90) {
                 correctness = "✅ Perfect form";
-            } else if (bucket >= 50 && bucket < 90) {
+            } else if (bucket >= 50) {
                 correctness = "⚠️ Needs improvement";
             } else {
                 correctness = "❌ Incorrect form";
             }
 
-            String display = labelName + "\n" + correctness;
+            String display = selectedExercise + "\n" + correctness;
 
             requireActivity().runOnUiThread(() -> statusTextView.setText(display));
 
@@ -158,6 +193,7 @@ public class MLFragment extends Fragment {
             Log.e(TAG, "Classification error: " + e.getMessage(), e);
         }
     }
+
     private void openFrontCamera() {
         CameraManager manager = (CameraManager) requireActivity().getSystemService(Activity.CAMERA_SERVICE);
         try {

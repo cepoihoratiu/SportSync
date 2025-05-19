@@ -1,9 +1,9 @@
-package horatiu.cepoi.app.data;
+package horatiu.cepoi.app.data.models;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-import horatiu.cepoi.app.data.models.ChatMessage;
+
 import horatiu.cepoi.app.service.GeminiService;
 
 import java.util.ArrayList;

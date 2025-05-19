@@ -15,8 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.textfield.TextInputEditText;
 import horatiu.cepoi.app.R;
 import horatiu.cepoi.app.data.ChatAdapter;
-import horatiu.cepoi.app.data.models.ChatMessage;
-import horatiu.cepoi.app.data.ChatViewModel;
+import horatiu.cepoi.app.data.models.ChatViewModel;
 
 import java.util.ArrayList;
 
