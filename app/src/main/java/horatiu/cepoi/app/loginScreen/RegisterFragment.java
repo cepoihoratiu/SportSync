@@ -74,13 +74,7 @@ public class RegisterFragment extends Fragment {
         userRepository.registerUserWithEmail(email, password, new UserRepository.UserCallback() {
             @Override
             public void onSuccess(Object result) {
-                String userId = (String) result;
-                Toast.makeText(getActivity(), "Registration successful", Toast.LENGTH_SHORT).show();
-                HomepageFragment homepageFragment = HomepageFragment.newInstance(userId);
-                requireActivity().getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, new MainFragment(homepageFragment, userId))
-                        .commit();
+                Toast.makeText(getActivity(), "Registration successful, go to login page", Toast.LENGTH_SHORT).show();
             }
 
             @Override
