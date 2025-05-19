@@ -8,6 +8,10 @@
         android:icon="@xml/ic_ml"
         android:title="Sync" />
     <item
+        android:id="@+id/nav_chat"
+        android:icon="@xml/ic_chat"
+        android:title="Chat" />
+    <item
         android:id="@+id/nav_profile"
         android:icon="@xml/ic_profile"
         android:title="Profile" />

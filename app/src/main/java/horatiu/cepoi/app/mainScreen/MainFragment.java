@@ -38,11 +38,12 @@ public class MainFragment extends Fragment {
             if (id == R.id.nav_home) {
                 selectedFragment = homepageFragment != null ? homepageFragment : HomepageFragment.newInstance(userId);
             } else if (id == R.id.nav_ml) {
-                selectedFragment = MLFragment.newInstance(userId); // ✅ fixed
+                selectedFragment = MLFragment.newInstance(userId);
             } else if (id == R.id.nav_profile) {
-                selectedFragment = ProfileFragment.newInstance(userId); // ✅ fixed
+                selectedFragment = ProfileFragment.newInstance(userId);
+            } else if (id == R.id.nav_chat) {
+                selectedFragment = ChatFragment.newInstance(userId);
             } else if (id == R.id.nav_admin && userId.equals("tE6ixjCwOybj2IBD9XfE")) {
-
                 selectedFragment = new AdminUsersFragment(userId);
             }
 

@@ -7,4 +7,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- ✨ Culori pentru MaterialCardView -->
+    <color name="md_theme_primary_container">#D0BCFF</color>
+    <color name="md_theme_on_primary_container">#381E72</color>
+    <color name="md_theme_surface_variant">#ECE6F0</color>
+    <color name="md_theme_on_surface_variant">#49454F</color>
+
+
 </resources>
