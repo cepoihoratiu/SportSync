@@ -24,6 +24,9 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         BottomNavigationView bottomNav = view.findViewById(R.id.bottom_nav);
+        if (userId.equals("tE6ixjCwOybj2IBD9XfE")) {
+            bottomNav.getMenu().findItem(R.id.nav_admin).setVisible(true);
+        }
 
         // ✅ Load homepage with userId
         loadFragment(homepageFragment != null ? homepageFragment : HomepageFragment.newInstance(userId));
@@ -38,6 +41,9 @@ public class MainFragment extends Fragment {
                 selectedFragment = MLFragment.newInstance(userId); // ✅ fixed
             } else if (id == R.id.nav_profile) {
                 selectedFragment = ProfileFragment.newInstance(userId); // ✅ fixed
+            } else if (id == R.id.nav_admin && userId.equals("tE6ixjCwOybj2IBD9XfE")) {
+
+                selectedFragment = new AdminUsersFragment(userId);
             }
 
             return loadFragment(selectedFragment);

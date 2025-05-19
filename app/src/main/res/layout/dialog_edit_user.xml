@@ -1,0 +1,8 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="16dp"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <EditText android:id="@+id/editName" android:hint="Nume" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <EditText android:id="@+id/editSurname" android:hint="Prenume" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+</LinearLayout>

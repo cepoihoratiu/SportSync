@@ -3,11 +3,17 @@ package horatiu.cepoi.app.repositories;
 import android.util.Log;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+
+import horatiu.cepoi.app.data.models.User;
 
 public class UserRepository {
     private static final String TAG = "UserRepository";
@@ -107,6 +113,32 @@ public class UserRepository {
             Log.e(TAG, "Hashing error: " + e.getMessage());
             return password;
         }
+    }
+
+    public void getAllUsers(Consumer<List<User>> callback) {
+        FirebaseFirestore.getInstance().collection("users")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<User> users = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        User user = doc.toObject(User.class);
+                        user.setId(doc.getId());
+                        users.add(user);
+                    }
+                    callback.accept(users);
+                });
+    }
+
+    public void updateUser(String userId, String name, String surname, Runnable onSuccess) {
+        FirebaseFirestore.getInstance().collection("users").document(userId)
+                .update("name", name, "surname", surname)
+                .addOnSuccessListener(aVoid -> onSuccess.run());
+    }
+
+    public void deleteUser(String userId, Runnable onSuccess) {
+        FirebaseFirestore.getInstance().collection("users").document(userId)
+                .delete()
+                .addOnSuccessListener(aVoid -> onSuccess.run());
     }
 
     public interface UserCallback {
