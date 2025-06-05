@@ -60,7 +60,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ArticleV
         });
 
         // Admin only buttons
-        if (currentUserId.equals("tE6ixjCwOybj2IBD9XfE")) {
+        if (currentUserId.equals("3VDP7Aoj2cT5DNHSu4t6")) {
             holder.approveBtn.setVisibility(View.VISIBLE);
             holder.deleteBtn.setVisibility(View.VISIBLE);
 

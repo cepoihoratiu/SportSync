@@ -36,7 +36,7 @@ public class AdminUsersFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_users, container, false);
 
-        if (!currentUserId.equals("tE6ixjCwOybj2IBD9XfE")) {
+        if (!currentUserId.equals("3VDP7Aoj2cT5DNHSu4t6")) {
             Toast.makeText(getContext(), "Access denied", Toast.LENGTH_SHORT).show();
             return view;
         }

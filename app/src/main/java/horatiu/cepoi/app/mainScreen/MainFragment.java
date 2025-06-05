@@ -24,7 +24,7 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         BottomNavigationView bottomNav = view.findViewById(R.id.bottom_nav);
-        if (userId.equals("tE6ixjCwOybj2IBD9XfE")) {
+        if (userId.equals("3VDP7Aoj2cT5DNHSu4t6")) {
             bottomNav.getMenu().findItem(R.id.nav_admin).setVisible(true);
         }
 
@@ -43,7 +43,7 @@ public class MainFragment extends Fragment {
                 selectedFragment = ProfileFragment.newInstance(userId);
             } else if (id == R.id.nav_chat) {
                 selectedFragment = ChatFragment.newInstance(userId);
-            } else if (id == R.id.nav_admin && userId.equals("tE6ixjCwOybj2IBD9XfE")) {
+            } else if (id == R.id.nav_admin && userId.equals("3VDP7Aoj2cT5DNHSu4t6")) {
                 selectedFragment = new AdminUsersFragment(userId);
             }
 

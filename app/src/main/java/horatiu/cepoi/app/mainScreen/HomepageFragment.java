@@ -28,7 +28,7 @@ import horatiu.cepoi.app.repositories.UserRepository;
 
 public class HomepageFragment extends Fragment {
 
-    private static final String ADMIN_ID = "tE6ixjCwOybj2IBD9XfE";
+    private static final String ADMIN_ID = "3VDP7Aoj2cT5DNHSu4t6";
     private String userId;
     private RecyclerView recyclerView;
     private ArticleAdapter adapter;

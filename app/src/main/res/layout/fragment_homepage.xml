@@ -10,7 +10,7 @@
         android:id="@+id/inputTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Titlu articol"
+        android:hint="Article Title"
         android:padding="8dp"
         android:background="@drawable/rounded_input" />
 
@@ -18,7 +18,7 @@
         android:id="@+id/inputContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Conținut"
+        android:hint="Article link"
         android:padding="8dp"
         android:background="@drawable/rounded_input"
         android:layout_marginTop="8dp" />
@@ -27,7 +27,7 @@
         android:id="@+id/inputImageUrl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Link"
+        android:hint="Image URL"
         android:padding="8dp"
         android:background="@drawable/rounded_input"
         android:layout_marginTop="8dp" />
