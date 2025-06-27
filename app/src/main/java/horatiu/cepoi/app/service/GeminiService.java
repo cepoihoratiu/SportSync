@@ -16,25 +16,12 @@ public class GeminiService {
         void onFailure(String error);
     }
 
-    public static void sendMessageToGemini(String prompt, GeminiCallback callback) {
+    public static void sendMessageWithContext(JSONArray contents, GeminiCallback callback) {
         OkHttpClient client = new OkHttpClient();
-        System.out.println("GMINI KEY $$$$$$ " + API_KEY);
 
         JSONObject bodyJson = new JSONObject();
         try {
-            JSONArray contents = new JSONArray();
-
-            JSONObject message = new JSONObject();
-            message.put("role", "user");
-
-            JSONObject part = new JSONObject();
-            part.put("text", prompt);
-
-            message.put("parts", new JSONArray().put(part));
-            contents.put(message);
-
             bodyJson.put("contents", contents);
-
         } catch (JSONException e) {
             callback.onFailure("Eroare JSON: " + e.getMessage());
             return;
@@ -69,12 +56,12 @@ public class GeminiService {
                     JSONObject content = candidates.getJSONObject(0).getJSONObject("content");
                     JSONArray parts = content.getJSONArray("parts");
                     String reply = parts.getJSONObject(0).getString("text");
-
-                    callback.onSuccess(reply);
+                    callback.onSuccess(reply.replaceAll("\\*\\*", ""));
                 } catch (Exception e) {
                     callback.onFailure("Parse error: " + e.getMessage());
                 }
             }
         });
     }
+
 }

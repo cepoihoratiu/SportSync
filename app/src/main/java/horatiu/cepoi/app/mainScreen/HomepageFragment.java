@@ -65,13 +65,6 @@ public class HomepageFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_homepage, container, false);
 
         recyclerView = view.findViewById(R.id.articlesRecyclerView);
-        inputTitle = view.findViewById(R.id.inputTitle);
-        inputContent = view.findViewById(R.id.inputContent);
-        inputImageUrl = view.findViewById(R.id.inputImageUrl);
-        postArticleButton = view.findViewById(R.id.postArticleButton);
-
-        postArticleButton.setOnClickListener(v -> postArticle());
-
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new ArticleAdapter(articleList, userId,
                 position -> {
@@ -106,13 +99,31 @@ public class HomepageFragment extends Fragment {
                 });
 
         recyclerView.setAdapter(adapter);
-
         loadArticles();
+
+        view.findViewById(R.id.fabAddArticle).setOnClickListener(v -> showAddArticleDialog());
 
         return view;
     }
 
-    private void postArticle() {
+    private void showAddArticleDialog() {
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_article, null);
+        EditText inputTitle = dialogView.findViewById(R.id.inputTitle);
+        EditText inputContent = dialogView.findViewById(R.id.inputContent);
+        EditText inputImageUrl = dialogView.findViewById(R.id.inputImageUrl);
+
+        new android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Publish Article")
+                .setView(dialogView)
+                .setPositiveButton("Publish", (dialog, which) -> {
+                    postArticle(inputTitle, inputContent, inputImageUrl);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+
+    private void postArticle(EditText inputTitle, EditText inputContent, EditText inputImageUrl) {
         String title = inputTitle.getText().toString().trim();
         String content = inputContent.getText().toString().trim();
         String imageUrl = inputImageUrl.getText().toString().trim();
@@ -123,49 +134,43 @@ public class HomepageFragment extends Fragment {
         }
         if (!Patterns.WEB_URL.matcher(imageUrl).matches() ||
                 !imageUrl.matches(".*\\.(jpg|jpeg|png|gif|webp)$")) {
-            Toast.makeText(getContext(), "Invalid image URL. Must be a valid URL\" (jpg/jpeg/png/webp)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Invalid image URL (jpg/png/webp)", Toast.LENGTH_SHORT).show();
             return;
         }
         if (!Patterns.WEB_URL.matcher(content).matches()) {
             Toast.makeText(getContext(), "Invalid content URL", Toast.LENGTH_SHORT).show();
             return;
         }
-        // The userId passed to newInstance is the author's ID
         if (userId == null || userId.isEmpty()) {
             Toast.makeText(getContext(), "User not identified. Cannot post article.", Toast.LENGTH_LONG).show();
-            Log.e("Homepage", "Author ID is null or empty in postArticle");
+            Log.e("Homepage", "Author ID is null or empty");
             return;
         }
 
-        userRepository.getUserById(userId, new UserRepository.UserCallback() { // userId here is the author's ID
+        userRepository.getUserById(userId, new UserRepository.UserCallback() {
             @Override
             public void onSuccess(Object result) {
                 Map<String, Object> userData = (Map<String, Object>) result;
                 String authorName = userData.containsKey("name") && userData.get("name") != null ? String.valueOf(userData.get("name")) : "Anonymous";
-
-                // Create Article object WITH authorId
-                Article article = new Article(null, title, content, imageUrl, authorName, userId, false); // Pass userId as authorId
+                Article article = new Article(null, title, content, imageUrl, authorName, userId, false);
 
                 articleRepository.addArticle(article, new ArticleRepository.ArticleCallback() {
                     @Override
                     public void onSuccess(Object result) {
                         Toast.makeText(getContext(), "Published article", Toast.LENGTH_LONG).show();
-                        inputTitle.setText("");
-                        inputContent.setText("");
-                        inputImageUrl.setText("");
                         loadArticles();
                     }
 
                     @Override
                     public void onFailure(Exception e) {
-                        Toast.makeText(getContext(), "Error at posting article " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), "Error posting article " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
             }
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Error at getting user" + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Error getting user " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

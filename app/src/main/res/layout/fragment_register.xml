@@ -4,30 +4,46 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="@color/md_theme_surface_variant"
+    android:padding="24dp">
 
-    <TextView
-        android:id="@+id/register_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Register"
-        android:textSize="24sp"
-        android:textStyle="bold"
+    <!-- App Logo -->
+    <ImageView
+        android:id="@+id/logo_imageView"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginTop="48dp"
+        android:src="@xml/ic_sportsync_logo"
+        android:scaleType="fitCenter"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- App Name -->
+    <TextView
+        android:id="@+id/logo_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SportSync"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/purple_500"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/logo_imageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Email Input -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/email_input_layout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:hint="Email"
         app:boxBackgroundMode="outline"
-        app:boxStrokeColor="@color/black"
+        app:boxStrokeColor="@color/md_theme_on_surface_variant"
         app:boxStrokeWidth="1dp"
-        app:layout_constraintTop_toBottomOf="@id/register_title"
+        android:layout_marginTop="28dp"
+        app:layout_constraintTop_toBottomOf="@id/logo_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -35,22 +51,23 @@
             android:id="@+id/email_register"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
+            android:padding="12dp"
             android:textSize="16sp"
-            android:inputType="textEmailAddress"/>
+            android:inputType="textEmailAddress"
+            android:background="@null"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Password Input -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/password_input_layout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:hint="Password"
         app:boxBackgroundMode="outline"
         app:passwordToggleEnabled="true"
-        app:boxStrokeColor="@color/black"
+        app:boxStrokeColor="@color/md_theme_on_surface_variant"
         app:boxStrokeWidth="1dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/email_input_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -59,30 +76,37 @@
             android:id="@+id/password_register"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
+            android:padding="12dp"
             android:textSize="16sp"
-            android:inputType="textPassword"/>
+            android:inputType="textPassword"
+            android:background="@null"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Register Button -->
     <Button
         android:id="@+id/register_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Register"
-        android:textColor="@android:color/white"
-        android:backgroundTint="@color/black"
-        android:layout_marginTop="20dp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/purple_500"
+        android:layout_marginTop="28dp"
+        android:paddingVertical="14dp"
+        android:paddingHorizontal="24dp"
         app:layout_constraintTop_toBottomOf="@id/password_input_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Back to Login Button -->
     <Button
         android:id="@+id/back_to_login_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Back to Login"
-        android:textColor="@android:color/white"
-        android:backgroundTint="@color/black"
+        android:textColor="@color/md_theme_on_primary_container"
+        android:backgroundTint="@color/md_theme_primary_container"
+        android:paddingVertical="14dp"
+        android:paddingHorizontal="24dp"
         android:layout_marginTop="12dp"
         app:layout_constraintTop_toBottomOf="@id/register_button"
         app:layout_constraintStart_toStartOf="parent"

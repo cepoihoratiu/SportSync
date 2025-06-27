@@ -1,50 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="16dp"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/homepage_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/md_theme_surface_variant"
+    android:padding="16dp">
 
-    <!-- Form pentru adăugare articol -->
-    <EditText
-        android:id="@+id/inputTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Article Title"
-        android:padding="8dp"
-        android:background="@drawable/rounded_input" />
-
-    <EditText
-        android:id="@+id/inputContent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Article link"
-        android:padding="8dp"
-        android:background="@drawable/rounded_input"
-        android:layout_marginTop="8dp" />
-
-    <EditText
-        android:id="@+id/inputImageUrl"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Image URL"
-        android:padding="8dp"
-        android:background="@drawable/rounded_input"
-        android:layout_marginTop="8dp" />
-
-    <Button
-        android:id="@+id/postArticleButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Publish"
-        android:layout_gravity="end"
-        android:layout_marginTop="8dp"/>
-
-    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/articlesRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="12dp"/>
-</LinearLayout>
+        android:layout_height="706dp"
+        android:layout_marginBottom="72dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddArticle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Add Article"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:tint="@color/white"
+        android:src="@drawable/ic_add_24"
+        app:backgroundTint="@color/purple_500" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -2,11 +2,13 @@ package horatiu.cepoi.app.mainScreen;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.*;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -14,9 +16,9 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.AdapterView;
 
 import androidx.annotation.NonNull;
@@ -30,6 +32,10 @@ import org.tensorflow.lite.support.label.Category;
 import org.tensorflow.lite.task.vision.classifier.ImageClassifier;
 import org.tensorflow.lite.task.vision.classifier.Classifications;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import horatiu.cepoi.app.R;
@@ -39,17 +45,26 @@ public class MLFragment extends Fragment {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private static final String TAG = "MLFragment";
 
-    private final String[] labels = {"Pushup", "Plank", "Squat", "Lateral raises"};
+    private String[] labels;
+    private boolean firstPickMade = false;
+    private boolean isPaused = true;
 
     private TextureView textureView;
     private TextView statusTextView;
     private Spinner exerciseSpinner;
+    private TextView instructionText;
+    private Button pauseButton;
     private String selectedExercise = "Pushup";
 
     private CameraDevice cameraDevice;
     private CameraCaptureSession cameraCaptureSession;
     private CaptureRequest.Builder previewRequestBuilder;
     private ImageClassifier classifier;
+    private Handler handler = new Handler();
+    private Runnable classifyRunnable;
+
+    private final List<Integer> recentBuckets = new ArrayList<>();
+    private static final int MAX_BUCKET_HISTORY = 10; // 1 sec at 10 Hz
 
     public MLFragment() {}
 
@@ -66,10 +81,19 @@ public class MLFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_ml, container, false);
+        loadLabelsFromAssets(requireContext());
 
         textureView = view.findViewById(R.id.camera_preview);
         statusTextView = view.findViewById(R.id.statusTextView);
         exerciseSpinner = view.findViewById(R.id.exercise_spinner);
+        pauseButton = view.findViewById(R.id.pause_button);
+        instructionText = view.findViewById(R.id.instructionText);
+        instructionText.setText("📣 Pick an exercise to start scanning!");
+
+        pauseButton.setOnClickListener(v -> {
+            isPaused = !isPaused;
+            pauseButton.setText(isPaused ? "Resume" : "Pause");
+        });
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, labels);
@@ -80,6 +104,18 @@ public class MLFragment extends Fragment {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 selectedExercise = labels[position];
                 statusTextView.setText("Analyzing: " + selectedExercise);
+
+                if (!firstPickMade) {
+                    firstPickMade = true;
+                    new android.app.AlertDialog.Builder(requireContext())
+                            .setTitle("📷 Camera Instructions")
+                            .setMessage("Make sure your body is fully visible in the frame.\n" +
+                                    "Use a simple, clean background.\n" +
+                                    "Good lighting helps improve accuracy.\n\n" +
+                                    "Position yourself clearly before starting.")
+                            .setPositiveButton("OK", null)
+                            .show();
+                }
             }
 
             @Override public void onNothingSelected(AdapterView<?> parent) {}
@@ -95,7 +131,35 @@ public class MLFragment extends Fragment {
         }
 
         loadModel();
+
+        classifyRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (!isPaused) classifyFrame();
+                handler.postDelayed(this, 500); // every 0.5 sec
+            }
+        };
+        handler.postDelayed(classifyRunnable, 500);
+
         return view;
+    }
+
+    private void loadLabelsFromAssets(Context context) {
+        List<String> labelList = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(context.getAssets().open("labels.txt")))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.trim().split(" ", 2);
+                if (parts.length == 2) {
+                    labelList.add(parts[1].trim());
+                }
+            }
+            labels = labelList.toArray(new String[0]);
+        } catch (IOException e) {
+            e.printStackTrace();
+            labels = new String[]{};
+        }
     }
 
     private void setupCamera() {
@@ -105,14 +169,8 @@ public class MLFragment extends Fragment {
             }
 
             @Override public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surface, int width, int height) {}
-
-            @Override public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) {
-                return true;
-            }
-
-            @Override public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {
-                classifyFrame();
-            }
+            @Override public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) { return true; }
+            @Override public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {}
         });
     }
 
@@ -126,9 +184,6 @@ public class MLFragment extends Fragment {
             statusTextView.setText(error);
         }
     }
-
-    private int lastShownBucket = -1;
-    private String lastShownLabel = "";
 
     private void classifyFrame() {
         if (classifier == null || textureView == null || !textureView.isAvailable()) return;
@@ -159,34 +214,40 @@ public class MLFragment extends Fragment {
                 } catch (NumberFormatException e) {
                     continue;
                 }
-
                 if (labelIndex == selectedIndex) {
                     matchedCategory = category;
                     break;
                 }
             }
-
             if (matchedCategory == null) return;
 
             int percentage = Math.round(matchedCategory.getScore() * 100);
             int bucket = Math.round(percentage / 10.0f) * 10;
 
-            if (selectedExercise.equals(lastShownLabel) && bucket == lastShownBucket) return;
+            // Add to history
+            recentBuckets.add(bucket);
+            if (recentBuckets.size() > MAX_BUCKET_HISTORY) {
+                recentBuckets.remove(0);
+            }
 
-            lastShownLabel = selectedExercise;
-            lastShownBucket = bucket;
+            // Evaluate last sec
+            int perfect = 0, good = 0, bad = 0;
+            for (int b : recentBuckets) {
+                if (b >= 90) perfect++;
+                else if (b >= 50) good++;
+                else bad++;
+            }
 
             String correctness;
-            if (bucket >= 90) {
+            if (perfect >= good && perfect >= bad) {
                 correctness = "✅ Perfect form";
-            } else if (bucket >= 50) {
+            } else if (good >= bad) {
                 correctness = "⚠️ Needs improvement";
             } else {
                 correctness = "❌ Incorrect form";
             }
 
             String display = selectedExercise + "\n" + correctness;
-
             requireActivity().runOnUiThread(() -> statusTextView.setText(display));
 
         } catch (Exception e) {
@@ -218,12 +279,10 @@ public class MLFragment extends Fragment {
             cameraDevice = camera;
             startPreview();
         }
-
         @Override public void onDisconnected(@NonNull CameraDevice camera) {
             camera.close();
             cameraDevice = null;
         }
-
         @Override public void onError(@NonNull CameraDevice camera, int error) {
             camera.close();
             cameraDevice = null;
@@ -253,7 +312,6 @@ public class MLFragment extends Fragment {
                                 Log.e(TAG, "Preview error", e);
                             }
                         }
-
                         @Override public void onConfigureFailed(@NonNull CameraCaptureSession session) {}
                     },
                     null

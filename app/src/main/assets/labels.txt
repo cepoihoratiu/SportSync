@@ -1,4 +1,5 @@
 0 Pushup
-1 Plank
-2 Squat
-3 Lateral raises
+1 Squat
+2 Lateral raises
+3 Biceps curl
+4 Plank
