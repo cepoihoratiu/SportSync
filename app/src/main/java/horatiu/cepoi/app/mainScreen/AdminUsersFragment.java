@@ -86,7 +86,7 @@ public class AdminUsersFragment extends Fragment {
         new AlertDialog.Builder(getContext())
                 .setTitle("Confirm deletion")
                 .setMessage("You are about to delete the user " + user.getName() + " " + user.getSurname() + ". Are you sure?")
-                .setPositiveButton("Șterge", (dialog, which) -> {
+                .setPositiveButton("Delete", (dialog, which) -> {
                     userRepository.deleteUser(user.getId(), this::loadUsers);
                 })
                 .setNegativeButton("Cancel", null)

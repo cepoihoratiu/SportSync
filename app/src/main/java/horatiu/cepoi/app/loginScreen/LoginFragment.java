@@ -75,7 +75,7 @@ public class LoginFragment extends Fragment {
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getActivity(), "Login failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Login failed", Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.AdapterView;
@@ -160,18 +161,6 @@ public class MLFragment extends Fragment {
             e.printStackTrace();
             labels = new String[]{};
         }
-    }
-
-    private void setupCamera() {
-        textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
-            @Override public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
-                openFrontCamera();
-            }
-
-            @Override public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surface, int width, int height) {}
-            @Override public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) { return true; }
-            @Override public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {}
-        });
     }
 
     private void loadModel() {
@@ -320,4 +309,43 @@ public class MLFragment extends Fragment {
             Log.e(TAG, "Camera preview error", e);
         }
     }
+
+    private void setupCamera() {
+        textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+            @Override
+            public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
+                openFrontCamera();
+            }
+
+            @Override
+            public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surface, int width, int height) {
+                adjustAspectRatio(width, height);
+            }
+
+            @Override
+            public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) {
+                return true;
+            }
+
+            @Override
+            public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {}
+        });
+    }
+
+    private void adjustAspectRatio(int textureViewWidth, int textureViewHeight) {
+        int cameraWidth = 640;
+        int cameraHeight = 480;
+        float cameraAspectRatio = (float) cameraWidth / cameraHeight;
+
+        float textureViewAspectRatio = (float) textureViewWidth / textureViewHeight;
+
+        if (cameraAspectRatio > textureViewAspectRatio) {
+            int newHeight = (int) (textureViewWidth / cameraAspectRatio);
+            textureView.setLayoutParams(new FrameLayout.LayoutParams(textureViewWidth, newHeight));
+        } else {
+            int newWidth = (int) (textureViewHeight * cameraAspectRatio);
+            textureView.setLayoutParams(new FrameLayout.LayoutParams(newWidth, textureViewHeight));
+        }
+    }
+
 }
